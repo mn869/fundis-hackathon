@@ -1,0 +1,73 @@
+{
+  "name": "fundis-booking-bot",
+  "version": "1.0.0",
+  "description": "A WhatsApp-based booking platform for local service providers in Kenya",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "server:dev": "nodemon src/server.js",
+    "client:dev": "cd frontend && npm run dev",
+    "build": "npm run client:build && npm run server:build",
+    "client:build": "cd frontend && npm run build",
+    "server:build": "echo 'Server build complete'",
+    "start": "node src/server.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/ --ext .js,.jsx",
+    "lint:fix": "eslint src/ --ext .js,.jsx --fix",
+    "format": "prettier --write \"src/**/*.{js,jsx,json,css,md}\"",
+    "db:setup": "node scripts/setup-database.js",
+    "db:migrate": "node scripts/migrate.js",
+    "db:seed": "node scripts/seed.js",
+    "webhook:start": "node src/services/whatsapp/webhook.js"
+  },
+  "keywords": [
+    "whatsapp",
+    "booking",
+    "fundis",
+    "freelancers",
+    "kenya",
+    "mpesa",
+    "services"
+  ],
+  "author": "Fundis Booking Bot Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "dotenv": "^16.3.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "joi": "^17.11.0",
+    "axios": "^1.6.0",
+    "node-cron": "^3.0.3",
+    "multer": "^1.4.5-lts.1",
+    "uuid": "^9.0.1",
+    "moment": "^2.29.4",
+    "winston": "^3.11.0",
+    "redis": "^4.6.10",
+    "pg": "^8.11.3",
+    "sequelize": "^6.35.0",
+    "socket.io": "^4.7.4",
+    "express-rate-limit": "^7.1.5",
+    "express-validator": "^7.0.1",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "concurrently": "^8.2.2",
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3",
+    "eslint": "^8.54.0",
+    "prettier": "^3.1.0",
+    "@types/jest": "^29.5.8"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}

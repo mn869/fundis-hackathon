@@ -7,7 +7,7 @@
     "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
     "server:dev": "nodemon src/server.js",
     "client:dev": "cd frontend && npm run dev",
-    "build": "npm run client:build && npm run server:build",
+    "build": "npm run client:build",
     "client:build": "cd frontend && npm run build",
     "server:build": "echo 'Server build complete'",
     "start": "node src/server.js",
@@ -20,7 +20,8 @@
     "db:setup": "node scripts/setup-database.js",
     "db:migrate": "node scripts/migrate.js",
     "db:seed": "node scripts/seed.js",
-    "webhook:start": "node src/services/whatsapp/webhook.js"
+    "webhook:start": "node src/services/whatsapp/webhook.js",
+    "postinstall": "cd frontend && npm install"
   },
   "keywords": [
     "whatsapp",
@@ -48,7 +49,6 @@
     "uuid": "^9.0.1",
     "moment": "^2.29.4",
     "winston": "^3.11.0",
-    "redis": "^4.6.10",
     "pg": "^8.11.3",
     "sequelize": "^6.35.0",
     "socket.io": "^4.7.4",

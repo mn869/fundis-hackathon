@@ -159,12 +159,12 @@ async function seedDatabase() {
     // Create sample bookings
     const allUsers = await User.findAll();
     const allProviders = await ServiceProvider.findAll();
-    const clients = allUsers.filter(user => user.role === 'client');
+    const seededClients = allUsers.filter(user => user.role === 'client');
 
-    if (clients.length > 0 && allProviders.length > 0) {
+    if (seededClients.length > 0 && allProviders.length > 0) {
       const sampleBookings = [
         {
-          clientId: clients[0].id,
+          clientId: seededClients[0].id,
           providerId: allProviders[0].id,
           serviceType: 'Plumbing',
           description: 'Fix leaking kitchen sink and replace faucet',
@@ -178,7 +178,7 @@ async function seedDatabase() {
           paymentMethod: 'mpesa'
         },
         {
-          clientId: clients[0].id,
+          clientId: seededClients[0].id,
           providerId: allProviders[1].id,
           serviceType: 'Electrical',
           description: 'Install new electrical outlets in living room',
@@ -192,7 +192,7 @@ async function seedDatabase() {
           paymentMethod: 'mpesa'
         },
         {
-          clientId: clients.length > 1 ? clients[1].id : clients[0].id,
+          clientId: seededClients.length > 1 ? seededClients[1].id : seededClients[0].id,
           providerId: allProviders[2].id,
           serviceType: 'Cleaning',
           description: 'Deep cleaning for 3-bedroom apartment',
@@ -221,7 +221,7 @@ async function seedDatabase() {
             status: 'completed',
             transactionId: `TXN${Date.now()}${Math.random().toString(36).substr(2, 9)}`,
             mpesaReceiptNumber: `QK${Math.random().toString(36).substr(2, 8).toUpperCase()}`,
-            phoneNumber: clients[0].phoneNumber,
+            phoneNumber: seededClients[0].phoneNumber,
             providerShare: (bookingData.finalCost || bookingData.estimatedCost) * 0.95,
             platformFee: (bookingData.finalCost || bookingData.estimatedCost) * 0.05,
             processedAt: new Date()

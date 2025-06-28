@@ -5,3 +5,4 @@
 {"level":"info","message":"Environment: development","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:24.458Z"}
 {"level":"info","message":"API Documentation: http://localhost:3000/api/docs","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:24.459Z"}
 {"level":"info","message":"127.0.0.1 - - [28/Jun/2025:20:06:26 +0000] \"GET / HTTP/1.1\" 404 29 \"https://localhost:3000/\" \"-\"","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:26.080Z"}
+{"level":"info","message":"127.0.0.1 - - [28/Jun/2025:20:06:30 +0000] \"GET / HTTP/1.1\" 404 29 \"https://localhost:3000/\" \"-\"","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:30.531Z"}

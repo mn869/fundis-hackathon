@@ -55,7 +55,8 @@
     "express-rate-limit": "^7.1.5",
     "express-validator": "^7.0.1",
     "compression": "^1.7.4",
-    "cookie-parser": "^1.4.6"
+    "cookie-parser": "^1.4.6",
+    "sqlite3": "^5.1.6"
   },
   "devDependencies": {
     "nodemon": "^3.0.1",

@@ -21,4 +21,9 @@ async function setupDatabase() {
   }
 }
 
-setupDatabase();
+// Only run if called directly
+if (require.main === module) {
+  setupDatabase();
+}
+
+module.exports = setupDatabase;

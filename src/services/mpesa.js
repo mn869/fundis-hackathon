@@ -3,11 +3,11 @@ const logger = require('../utils/logger');
 
 class MpesaService {
   constructor() {
-    this.consumerKey = process.env.MPESA_CONSUMER_KEY;
-    this.consumerSecret = process.env.MPESA_CONSUMER_SECRET;
-    this.shortcode = process.env.MPESA_SHORTCODE;
-    this.passkey = process.env.MPESA_PASSKEY;
-    this.callbackUrl = process.env.MPESA_CALLBACK_URL;
+    this.consumerKey = process.env.MPESA_CONSUMER_KEY || 'demo_key';
+    this.consumerSecret = process.env.MPESA_CONSUMER_SECRET || 'demo_secret';
+    this.shortcode = process.env.MPESA_SHORTCODE || '174379';
+    this.passkey = process.env.MPESA_PASSKEY || 'demo_passkey';
+    this.callbackUrl = process.env.MPESA_CALLBACK_URL || 'https://yourdomain.com/api/payments/callback';
     this.baseUrl = process.env.NODE_ENV === 'production' 
       ? 'https://api.safaricom.co.ke' 
       : 'https://sandbox.safaricom.co.ke';
@@ -15,6 +15,11 @@ class MpesaService {
 
   async getAccessToken() {
     try {
+      // For demo purposes, return a mock token
+      if (process.env.NODE_ENV !== 'production') {
+        return 'demo_access_token';
+      }
+
       const auth = Buffer.from(`${this.consumerKey}:${this.consumerSecret}`).toString('base64');
       
       const response = await axios.get(`${this.baseUrl}/oauth/v1/generate?grant_type=client_credentials`, {
@@ -38,6 +43,20 @@ class MpesaService {
 
   async initiatePayment({ phoneNumber, amount, reference, description }) {
     try {
+      // For demo purposes, simulate successful payment initiation
+      if (process.env.NODE_ENV !== 'production') {
+        const mockResponse = {
+          MerchantRequestID: `mock_merchant_${Date.now()}`,
+          CheckoutRequestID: `mock_checkout_${Date.now()}`,
+          ResponseCode: "0",
+          ResponseDescription: "Success. Request accepted for processing",
+          CustomerMessage: "Success. Request accepted for processing"
+        };
+
+        logger.info('Mock M-Pesa payment initiated:', { reference, amount, phone: phoneNumber });
+        return mockResponse;
+      }
+
       const accessToken = await this.getAccessToken();
       const { password, timestamp } = this.generatePassword();
 
@@ -83,6 +102,18 @@ class MpesaService {
 
   async queryPaymentStatus(checkoutRequestId) {
     try {
+      // For demo purposes, return mock status
+      if (process.env.NODE_ENV !== 'production') {
+        return {
+          ResponseCode: "0",
+          ResponseDescription: "The service request has been accepted successfully",
+          MerchantRequestID: "mock_merchant_id",
+          CheckoutRequestID: checkoutRequestId,
+          ResultCode: "0",
+          ResultDesc: "The service request is processed successfully."
+        };
+      }
+
       const accessToken = await this.getAccessToken();
       const { password, timestamp } = this.generatePassword();
 

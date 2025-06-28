@@ -24,12 +24,12 @@ const ServiceProvider = sequelize.define('ServiceProvider', {
     allowNull: true
   },
   services: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
+    type: DataTypes.JSON,
     allowNull: false,
     defaultValue: []
   },
   skills: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
+    type: DataTypes.JSON,
     allowNull: false,
     defaultValue: []
   },
@@ -49,7 +49,7 @@ const ServiceProvider = sequelize.define('ServiceProvider', {
     }
   },
   availability: {
-    type: DataTypes.JSONB,
+    type: DataTypes.JSON,
     allowNull: true,
     defaultValue: {
       monday: { available: true, hours: '08:00-18:00' },
@@ -62,7 +62,7 @@ const ServiceProvider = sequelize.define('ServiceProvider', {
     }
   },
   portfolio: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
+    type: DataTypes.JSON,
     allowNull: false,
     defaultValue: []
   },
@@ -88,7 +88,7 @@ const ServiceProvider = sequelize.define('ServiceProvider', {
     defaultValue: false
   },
   verificationDocuments: {
-    type: DataTypes.JSONB,
+    type: DataTypes.JSON,
     allowNull: true
   },
   subscriptionPlan: {

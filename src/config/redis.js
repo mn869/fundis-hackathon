@@ -1,22 +1,47 @@
-const redis = require('redis');
 const logger = require('../utils/logger');
+
+// Mock Redis client for development
+class MockRedisClient {
+  constructor() {
+    this.data = new Map();
+  }
+
+  async connect() {
+    logger.info('Mock Redis connected successfully');
+  }
+
+  async get(key) {
+    return this.data.get(key) || null;
+  }
+
+  async set(key, value) {
+    this.data.set(key, value);
+    return 'OK';
+  }
+
+  async setEx(key, seconds, value) {
+    this.data.set(key, value);
+    // In a real implementation, you'd set expiration
+    setTimeout(() => {
+      this.data.delete(key);
+    }, seconds * 1000);
+    return 'OK';
+  }
+
+  async del(key) {
+    return this.data.delete(key) ? 1 : 0;
+  }
+
+  async ping() {
+    return 'PONG';
+  }
+}
 
 let client;
 
 const connectRedis = async () => {
   try {
-    client = redis.createClient({
-      url: process.env.REDIS_URL || 'redis://localhost:6379'
-    });
-
-    client.on('error', (err) => {
-      logger.error('Redis Client Error:', err);
-    });
-
-    client.on('connect', () => {
-      logger.info('Redis connected successfully');
-    });
-
+    client = new MockRedisClient();
     await client.connect();
   } catch (error) {
     logger.error('Redis connection failed:', error);

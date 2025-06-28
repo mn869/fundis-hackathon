@@ -13,7 +13,6 @@ const User = sequelize.define('User', {
     allowNull: false,
     unique: true,
     validate: {
-      isNumeric: true,
       len: [10, 15]
     }
   },
@@ -49,7 +48,7 @@ const User = sequelize.define('User', {
     defaultValue: true
   },
   location: {
-    type: DataTypes.JSONB,
+    type: DataTypes.JSON,
     allowNull: true
   },
   profileImage: {

@@ -44,7 +44,7 @@ const Review = sequelize.define('Review', {
     allowNull: true
   },
   images: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
+    type: DataTypes.JSON,
     defaultValue: []
   },
   isVerified: {

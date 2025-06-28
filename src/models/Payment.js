@@ -60,7 +60,7 @@ const Payment = sequelize.define('Payment', {
     allowNull: true
   },
   metadata: {
-    type: DataTypes.JSONB,
+    type: DataTypes.JSON,
     allowNull: true
   },
   failureReason: {

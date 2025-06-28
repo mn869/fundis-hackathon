@@ -41,7 +41,7 @@ const Booking = sequelize.define('Booking', {
     comment: 'Duration in hours'
   },
   location: {
-    type: DataTypes.JSONB,
+    type: DataTypes.JSON,
     allowNull: false
   },
   status: {
@@ -73,7 +73,7 @@ const Booking = sequelize.define('Booking', {
     allowNull: true
   },
   images: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
+    type: DataTypes.JSON,
     defaultValue: []
   },
   completedAt: {

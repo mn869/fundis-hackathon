@@ -1,0 +1,6 @@
+{"level":"info","message":"Database connection established successfully","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:23.874Z"}
+{"level":"info","message":"Database synchronized","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:24.448Z"}
+{"level":"info","message":"Mock Redis connected successfully","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:24.449Z"}
+{"level":"info","message":"Server running on port 3000","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:24.457Z"}
+{"level":"info","message":"Environment: development","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:24.458Z"}
+{"level":"info","message":"API Documentation: http://localhost:3000/api/docs","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:24.459Z"}

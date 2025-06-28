@@ -15,3 +15,4 @@
 {"level":"info","message":"127.0.0.1 - - [28/Jun/2025:20:06:55 +0000] \"GET / HTTP/1.1\" 404 29 \"https://localhost:3000/\" \"-\"","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:55.997Z"}
 {"level":"info","message":"127.0.0.1 - - [28/Jun/2025:20:07:01 +0000] \"GET / HTTP/1.1\" 404 29 \"https://localhost:3000/\" \"-\"","service":"fundis-booking-bot","timestamp":"2025-06-28T20:07:01.178Z"}
 {"level":"info","message":"127.0.0.1 - - [28/Jun/2025:20:07:09 +0000] \"GET / HTTP/1.1\" 404 29 \"https://localhost:3000/\" \"-\"","service":"fundis-booking-bot","timestamp":"2025-06-28T20:07:09.416Z"}
+{"level":"info","message":"127.0.0.1 - - [28/Jun/2025:20:07:17 +0000] \"GET / HTTP/1.1\" 404 29 \"https://localhost:3000/\" \"-\"","service":"fundis-booking-bot","timestamp":"2025-06-28T20:07:17.656Z"}

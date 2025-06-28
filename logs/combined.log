@@ -6,3 +6,10 @@
 {"level":"info","message":"API Documentation: http://localhost:3000/api/docs","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:24.459Z"}
 {"level":"info","message":"127.0.0.1 - - [28/Jun/2025:20:06:26 +0000] \"GET / HTTP/1.1\" 404 29 \"https://localhost:3000/\" \"-\"","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:26.080Z"}
 {"level":"info","message":"127.0.0.1 - - [28/Jun/2025:20:06:30 +0000] \"GET / HTTP/1.1\" 404 29 \"https://localhost:3000/\" \"-\"","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:30.531Z"}
+{"level":"info","message":"Database connection established successfully","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:41.368Z"}
+{"level":"info","message":"Database synchronized","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:54.905Z"}
+{"level":"info","message":"Mock Redis connected successfully","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:54.907Z"}
+{"level":"info","message":"Server running on port 3000","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:54.916Z"}
+{"level":"info","message":"Environment: development","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:54.917Z"}
+{"level":"info","message":"API Documentation: http://localhost:3000/api/docs","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:54.918Z"}
+{"level":"info","message":"127.0.0.1 - - [28/Jun/2025:20:06:55 +0000] \"GET / HTTP/1.1\" 404 29 \"https://localhost:3000/\" \"-\"","service":"fundis-booking-bot","timestamp":"2025-06-28T20:06:55.997Z"}

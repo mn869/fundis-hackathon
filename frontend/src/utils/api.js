@@ -2,7 +2,7 @@ import axios from 'axios'
 import toast from 'react-hot-toast'
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.PROD ? '/api' : 'http://localhost:3000/api',
   timeout: 10000,
 })
 

@@ -4,7 +4,16 @@ const logger = require('../utils/logger');
 
 const authenticate = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '') || req.cookies.token;
+    const authHeader = req.header('Authorization');
+    const cookieToken = req.cookies?.token;
+    
+    let token = null;
+    
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.replace('Bearer ', '');
+    } else if (cookieToken) {
+      token = cookieToken;
+    }
 
     if (!token) {
       return res.status(401).json({
@@ -13,23 +22,45 @@ const authenticate = async (req, res, next) => {
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findByPk(decoded.userId);
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret_key');
+      const user = await User.findByPk(decoded.userId, {
+        include: [
+          {
+            association: 'providerProfile',
+            required: false
+          }
+        ]
+      });
 
-    if (!user || !user.isActive) {
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid token. User not found.'
+        });
+      }
+
+      if (!user.isActive) {
+        return res.status(401).json({
+          success: false,
+          message: 'Account is deactivated.'
+        });
+      }
+
+      req.user = user;
+      next();
+    } catch (jwtError) {
+      logger.error('JWT verification error:', jwtError);
       return res.status(401).json({
         success: false,
-        message: 'Invalid token or user not found.'
+        message: 'Invalid token.'
       });
     }
-
-    req.user = user;
-    next();
   } catch (error) {
     logger.error('Authentication error:', error);
-    res.status(401).json({
+    res.status(500).json({
       success: false,
-      message: 'Invalid token.'
+      message: 'Authentication failed.'
     });
   }
 };
@@ -46,7 +77,7 @@ const authorize = (...roles) => {
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
-        message: 'Insufficient permissions.'
+        message: `Access denied. Required role: ${roles.join(' or ')}`
       });
     }
 

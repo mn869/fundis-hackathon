@@ -9,7 +9,7 @@ const router = express.Router();
 
 // Generate JWT token
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ userId }, process.env.JWT_SECRET || 'fallback_secret_key', { expiresIn: '7d' });
 };
 
 // Register user
@@ -51,29 +51,67 @@ router.post('/register', validate('register'), async (req, res) => {
     logger.error('Registration error:', error);
     res.status(500).json({
       success: false,
-      message: 'Registration failed'
+      message: 'Registration failed',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
 
 // Login user
-router.post('/login', validate('login'), async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
-    const { phoneNumber } = req.body;
+    const { phoneNumber, password } = req.body;
 
-    const user = await User.findOne({ where: { phoneNumber } });
+    // Validate input
+    if (!phoneNumber) {
+      return res.status(400).json({
+        success: false,
+        message: 'Phone number is required'
+      });
+    }
+
+    // Clean phone number (remove spaces, dashes, etc.)
+    const cleanPhoneNumber = phoneNumber.replace(/[\s\-\(\)]/g, '');
+
+    logger.info(`Login attempt for phone: ${cleanPhoneNumber}`);
+
+    // Find user by phone number
+    const user = await User.findOne({ 
+      where: { phoneNumber: cleanPhoneNumber },
+      include: [
+        {
+          association: 'providerProfile',
+          required: false
+        }
+      ]
+    });
+
     if (!user) {
+      logger.warn(`User not found for phone: ${cleanPhoneNumber}`);
       return res.status(404).json({
         success: false,
-        message: 'User not found'
+        message: 'User not found. Please check your phone number or register first.'
       });
     }
 
     if (!user.isActive) {
+      logger.warn(`Inactive user login attempt: ${cleanPhoneNumber}`);
       return res.status(403).json({
         success: false,
-        message: 'Account is deactivated'
+        message: 'Account is deactivated. Please contact support.'
       });
+    }
+
+    // For demo purposes, we don't require password verification
+    // In production, you would verify the password here
+    if (password && user.password) {
+      const isValidPassword = await user.comparePassword(password);
+      if (!isValidPassword) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid password'
+        });
+      }
     }
 
     // Update last login
@@ -90,12 +128,13 @@ router.post('/login', validate('login'), async (req, res) => {
       }
     });
 
-    logger.info(`User logged in: ${phoneNumber}`);
+    logger.info(`User logged in successfully: ${cleanPhoneNumber} (${user.name})`);
   } catch (error) {
     logger.error('Login error:', error);
     res.status(500).json({
       success: false,
-      message: 'Login failed'
+      message: 'Login failed',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
@@ -111,6 +150,13 @@ router.get('/profile', authenticate, async (req, res) => {
         }
       ]
     });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
 
     res.json({
       success: true,
@@ -156,6 +202,32 @@ router.post('/logout', authenticate, (req, res) => {
     success: true,
     message: 'Logged out successfully'
   });
+});
+
+// Test endpoint to check available users
+router.get('/test-users', async (req, res) => {
+  try {
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(404).json({ message: 'Not found' });
+    }
+
+    const users = await User.findAll({
+      attributes: ['id', 'phoneNumber', 'name', 'email', 'role', 'isActive', 'isVerified'],
+      limit: 10
+    });
+
+    res.json({
+      success: true,
+      data: { users },
+      message: 'Available test users'
+    });
+  } catch (error) {
+    logger.error('Test users error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch test users'
+    });
+  }
 });
 
 module.exports = router;

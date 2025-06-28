@@ -8,7 +8,7 @@
     "server:dev": "nodemon src/server.js",
     "client:dev": "cd frontend && npm run dev",
     "build": "npm run client:build",
-    "client:build": "cd frontend && npm run build",
+    "client:build": "cd frontend && npm install && npm run build",
     "server:build": "echo 'Server build complete'",
     "start": "node src/server.js",
     "test": "jest",
@@ -21,7 +21,8 @@
     "db:migrate": "node scripts/migrate.js",
     "db:seed": "node scripts/seed.js",
     "webhook:start": "node src/services/whatsapp/webhook.js",
-    "postinstall": "cd frontend && npm install"
+    "postinstall": "cd frontend && npm install",
+    "netlify:build": "npm run build && npm run db:setup && npm run db:seed"
   },
   "keywords": [
     "whatsapp",
@@ -56,7 +57,8 @@
     "express-validator": "^7.0.1",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
-    "sqlite3": "^5.1.6"
+    "sqlite3": "^5.1.6",
+    "serverless-http": "^3.2.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.1",
@@ -68,7 +70,7 @@
     "@types/jest": "^29.5.8"
   },
   "engines": {
-    "node": ">=16.0.0",
+    "node": ">=18.0.0",
     "npm": ">=8.0.0"
   }
 }

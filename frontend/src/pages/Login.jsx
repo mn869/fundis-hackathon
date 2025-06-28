@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Wrench, Loader2 } from 'lucide-react'
+import { Wrench, Loader2, AlertCircle } from 'lucide-react'
 import { login, clearError } from '../store/slices/authSlice'
 import toast from 'react-hot-toast'
 
@@ -11,6 +11,12 @@ const Login = () => {
     phoneNumber: '',
     password: ''
   })
+  const [showTestCredentials, setShowTestCredentials] = useState(false)
+
+  useEffect(() => {
+    // Clear any previous errors when component mounts
+    dispatch(clearError())
+  }, [dispatch])
 
   const handleChange = (e) => {
     setFormData({
@@ -25,17 +31,30 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (!formData.phoneNumber) {
+    if (!formData.phoneNumber.trim()) {
       toast.error('Phone number is required')
       return
     }
 
+    console.log('Submitting login form with:', formData.phoneNumber);
+
     try {
-      await dispatch(login(formData)).unwrap()
+      const result = await dispatch(login({
+        phoneNumber: formData.phoneNumber.trim(),
+        password: formData.password
+      })).unwrap()
+      
+      console.log('Login successful:', result);
       toast.success('Login successful!')
     } catch (error) {
-      // Error is already handled by the slice
+      console.error('Login failed:', error);
+      toast.error(error || 'Login failed')
     }
+  }
+
+  const handleTestLogin = (phoneNumber) => {
+    setFormData({ ...formData, phoneNumber })
+    setShowTestCredentials(false)
   }
 
   return (
@@ -58,8 +77,12 @@ const Login = () => {
         <div className="bg-white py-8 px-6 shadow-xl rounded-xl">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg">
-                {error}
+              <div className="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg flex items-start">
+                <AlertCircle className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-medium">Login Failed</p>
+                  <p className="text-sm">{error}</p>
+                </div>
               </div>
             )}
 
@@ -76,6 +99,7 @@ const Login = () => {
                 placeholder="e.g., 0712345678"
                 value={formData.phoneNumber}
                 onChange={handleChange}
+                disabled={loading}
               />
             </div>
 
@@ -91,6 +115,7 @@ const Login = () => {
                 placeholder="Enter password if required"
                 value={formData.password}
                 onChange={handleChange}
+                disabled={loading}
               />
             </div>
 
@@ -98,7 +123,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full btn-primary py-3 text-base"
+                className="w-full btn-primary py-3 text-base disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
@@ -112,11 +137,52 @@ const Login = () => {
             </div>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-xs text-gray-500">
-              Demo credentials: Phone: 0700000000
-            </p>
+          <div className="mt-6">
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => setShowTestCredentials(!showTestCredentials)}
+                className="text-sm text-primary-600 hover:text-primary-500"
+              >
+                {showTestCredentials ? 'Hide' : 'Show'} Test Credentials
+              </button>
+            </div>
+
+            {showTestCredentials && (
+              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                <p className="text-xs text-gray-600 mb-3 font-medium">Demo Accounts:</p>
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => handleTestLogin('0700000000')}
+                    className="w-full text-left px-3 py-2 text-xs bg-white border border-gray-200 rounded hover:bg-gray-50"
+                  >
+                    <span className="font-medium">Admin:</span> 0700000000
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleTestLogin('0712345678')}
+                    className="w-full text-left px-3 py-2 text-xs bg-white border border-gray-200 rounded hover:bg-gray-50"
+                  >
+                    <span className="font-medium">Client:</span> 0712345678
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleTestLogin('0723456789')}
+                    className="w-full text-left px-3 py-2 text-xs bg-white border border-gray-200 rounded hover:bg-gray-50"
+                  >
+                    <span className="font-medium">Provider:</span> 0723456789
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
+        </div>
+
+        <div className="text-center">
+          <p className="text-xs text-gray-500">
+            Having trouble? Check that both frontend and backend servers are running.
+          </p>
         </div>
       </div>
     </div>

@@ -62,8 +62,11 @@ router.post('/login', async (req, res) => {
   try {
     const { phoneNumber, password } = req.body;
 
+    logger.info(`Login attempt received for phone: ${phoneNumber}`);
+
     // Validate input
     if (!phoneNumber) {
+      logger.warn('Login attempt without phone number');
       return res.status(400).json({
         success: false,
         message: 'Phone number is required'
@@ -72,10 +75,10 @@ router.post('/login', async (req, res) => {
 
     // Clean phone number (remove spaces, dashes, etc.)
     const cleanPhoneNumber = phoneNumber.replace(/[\s\-\(\)]/g, '');
+    logger.info(`Cleaned phone number: ${cleanPhoneNumber}`);
 
-    logger.info(`Login attempt for phone: ${cleanPhoneNumber}`);
-
-    // Find user by phone number
+    // Find user by phone number with detailed logging
+    logger.info('Searching for user in database...');
     const user = await User.findOne({ 
       where: { phoneNumber: cleanPhoneNumber },
       include: [
@@ -88,11 +91,39 @@ router.post('/login', async (req, res) => {
 
     if (!user) {
       logger.warn(`User not found for phone: ${cleanPhoneNumber}`);
+      
+      // Check if there are any users in the database
+      const userCount = await User.count();
+      logger.info(`Total users in database: ${userCount}`);
+      
+      if (userCount === 0) {
+        logger.error('No users found in database - database may not be seeded');
+        return res.status(500).json({
+          success: false,
+          message: 'Database not properly initialized. Please contact support.'
+        });
+      }
+      
+      // List available phone numbers for debugging (only in development)
+      if (process.env.NODE_ENV === 'development') {
+        const allUsers = await User.findAll({
+          attributes: ['phoneNumber', 'name', 'role'],
+          limit: 5
+        });
+        logger.info('Available users for testing:');
+        allUsers.forEach(u => {
+          logger.info(`  - ${u.phoneNumber}: ${u.name} (${u.role})`);
+        });
+      }
+      
       return res.status(404).json({
         success: false,
-        message: 'User not found. Please check your phone number or register first.'
+        message: 'User not found. Please check your phone number or register first.',
+        hint: process.env.NODE_ENV === 'development' ? 'Try: 0700000000 (admin), 0712345678 (client), or 0723456789 (provider)' : undefined
       });
     }
+
+    logger.info(`User found: ${user.name} (${user.role}) - Active: ${user.isActive}, Verified: ${user.isVerified}`);
 
     if (!user.isActive) {
       logger.warn(`Inactive user login attempt: ${cleanPhoneNumber}`);
@@ -107,6 +138,7 @@ router.post('/login', async (req, res) => {
     if (password && user.password) {
       const isValidPassword = await user.comparePassword(password);
       if (!isValidPassword) {
+        logger.warn(`Invalid password for user: ${cleanPhoneNumber}`);
         return res.status(401).json({
           success: false,
           message: 'Invalid password'
@@ -118,6 +150,7 @@ router.post('/login', async (req, res) => {
     await user.update({ lastLogin: new Date() });
 
     const token = generateToken(user.id);
+    logger.info(`Token generated for user: ${user.id}`);
 
     res.json({
       success: true,
@@ -204,7 +237,7 @@ router.post('/logout', authenticate, (req, res) => {
   });
 });
 
-// Test endpoint to check available users
+// Test endpoint to check available users (development only)
 router.get('/test-users', async (req, res) => {
   try {
     if (process.env.NODE_ENV === 'production') {
@@ -219,13 +252,49 @@ router.get('/test-users', async (req, res) => {
     res.json({
       success: true,
       data: { users },
-      message: 'Available test users'
+      message: 'Available test users',
+      instructions: {
+        admin: '0700000000',
+        client: '0712345678', 
+        provider: '0723456789'
+      }
     });
   } catch (error) {
     logger.error('Test users error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch test users'
+    });
+  }
+});
+
+// Debug endpoint to check database connection
+router.get('/debug', async (req, res) => {
+  try {
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(404).json({ message: 'Not found' });
+    }
+
+    const userCount = await User.count();
+    const sampleUser = await User.findOne({
+      attributes: ['phoneNumber', 'name', 'role', 'isActive', 'isVerified']
+    });
+
+    res.json({
+      success: true,
+      data: {
+        userCount,
+        sampleUser,
+        databaseConnected: true,
+        environment: process.env.NODE_ENV
+      }
+    });
+  } catch (error) {
+    logger.error('Debug endpoint error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Debug check failed',
+      error: error.message
     });
   }
 });

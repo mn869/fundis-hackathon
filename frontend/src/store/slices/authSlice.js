@@ -6,11 +6,32 @@ export const login = createAsyncThunk(
   'auth/login',
   async ({ phoneNumber, password }, { rejectWithValue }) => {
     try {
-      const response = await api.post('/auth/login', { phoneNumber, password })
-      localStorage.setItem('token', response.data.data.token)
-      return response.data.data
+      console.log('Attempting login with phone:', phoneNumber);
+      
+      const response = await api.post('/auth/login', { 
+        phoneNumber: phoneNumber.trim(), 
+        password 
+      });
+      
+      console.log('Login response:', response.data);
+      
+      if (response.data.success && response.data.data.token) {
+        localStorage.setItem('token', response.data.data.token);
+        console.log('Token saved to localStorage');
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || 'Login failed');
+      }
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Login failed')
+      console.error('Login error:', error);
+      
+      if (error.response?.data?.message) {
+        return rejectWithValue(error.response.data.message);
+      } else if (error.code === 'ECONNREFUSED') {
+        return rejectWithValue('Cannot connect to server. Please make sure the backend is running.');
+      } else {
+        return rejectWithValue(error.message || 'Login failed');
+      }
     }
   }
 )
@@ -27,6 +48,7 @@ export const fetchProfile = createAsyncThunk(
       const response = await api.get('/auth/profile')
       return response.data.data.user
     } catch (error) {
+      console.error('Profile fetch error:', error);
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch profile')
     }
   }
@@ -52,6 +74,13 @@ const authSlice = createSlice({
       state.token = action.payload.token
       state.isAuthenticated = true
     },
+    resetAuth: (state) => {
+      state.user = null
+      state.token = null
+      state.isAuthenticated = false
+      state.error = null
+      state.loading = false
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -59,6 +88,7 @@ const authSlice = createSlice({
       .addCase(login.pending, (state) => {
         state.loading = true
         state.error = null
+        console.log('Login pending...');
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false
@@ -66,6 +96,7 @@ const authSlice = createSlice({
         state.token = action.payload.token
         state.isAuthenticated = true
         state.error = null
+        console.log('Login fulfilled:', action.payload.user.name);
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false
@@ -73,6 +104,8 @@ const authSlice = createSlice({
         state.isAuthenticated = false
         state.user = null
         state.token = null
+        localStorage.removeItem('token')
+        console.error('Login rejected:', action.payload);
       })
       // Logout
       .addCase(logout.fulfilled, (state) => {
@@ -93,7 +126,7 @@ const authSlice = createSlice({
         state.loading = false
         state.error = action.payload
         // If profile fetch fails, likely token is invalid
-        if (action.payload?.includes('token')) {
+        if (action.payload?.includes('token') || action.payload?.includes('401')) {
           state.isAuthenticated = false
           state.token = null
           localStorage.removeItem('token')
@@ -102,5 +135,5 @@ const authSlice = createSlice({
   },
 })
 
-export const { clearError, setCredentials } = authSlice.actions
+export const { clearError, setCredentials, resetAuth } = authSlice.actions
 export default authSlice.reducer

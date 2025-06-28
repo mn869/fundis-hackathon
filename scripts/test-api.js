@@ -3,10 +3,60 @@ const logger = require('../src/utils/logger');
 
 const API_BASE_URL = process.env.API_URL || 'http://localhost:3000';
 
+async function checkServerRunning() {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/health`, { timeout: 5000 });
+    return response.status === 200;
+  } catch (error) {
+    return false;
+  }
+}
+
+async function waitForServer(maxAttempts = 30, interval = 1000) {
+  logger.info('🔍 Checking if server is running...');
+  
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const isRunning = await checkServerRunning();
+    if (isRunning) {
+      logger.info('✅ Server is running and accessible');
+      return true;
+    }
+    
+    if (attempt < maxAttempts) {
+      logger.info(`⏳ Server not ready, attempt ${attempt}/${maxAttempts}. Retrying in ${interval/1000}s...`);
+      await new Promise(resolve => setTimeout(resolve, interval));
+    }
+  }
+  
+  return false;
+}
+
 async function testAPIEndpoints() {
   try {
     logger.info('🔍 Testing API endpoints...');
     logger.info(`Base URL: ${API_BASE_URL}`);
+
+    // Check if server is running first
+    const serverRunning = await waitForServer();
+    
+    if (!serverRunning) {
+      logger.error('❌ Server is not running or not accessible!');
+      logger.error('');
+      logger.error('To fix this issue:');
+      logger.error('1. Start the server in a separate terminal:');
+      logger.error('   npm start');
+      logger.error('   OR');
+      logger.error('   npm run server:dev');
+      logger.error('');
+      logger.error('2. Wait for the server to start (you should see "Server running on port 3000")');
+      logger.error('3. Then run this test script again');
+      logger.error('');
+      logger.error('Alternatively, you can run both server and tests together:');
+      logger.error('   npm run dev (in one terminal)');
+      logger.error('   npm run test:api (in another terminal after server starts)');
+      
+      throw new Error('Server not accessible');
+    }
 
     const results = {
       passed: 0,
@@ -110,7 +160,12 @@ async function testAPIEndpoints() {
           passed: false,
           error: error.message
         });
-        logger.error(`❌ ${test.name}: ${error.message}`);
+        
+        if (error.code === 'ECONNREFUSED') {
+          logger.error(`❌ ${test.name}: Server connection refused - make sure server is running on port 3000`);
+        } else {
+          logger.error(`❌ ${test.name}: ${error.message}`);
+        }
       }
     }
 
@@ -160,7 +215,11 @@ async function testAPIEndpoints() {
       }
 
     } catch (error) {
-      logger.error(`❌ Authentication test failed: ${error.message}`);
+      if (error.code === 'ECONNREFUSED') {
+        logger.error('❌ Authentication test failed: Server connection refused');
+      } else {
+        logger.error(`❌ Authentication test failed: ${error.message}`);
+      }
       results.failed += 2;
     }
 
@@ -190,12 +249,20 @@ async function testAPIEndpoints() {
         }
       }
     } catch (error) {
-      logger.error(`❌ Provider listing failed: ${error.message}`);
+      if (error.code === 'ECONNREFUSED') {
+        logger.error('❌ Provider listing failed: Server connection refused');
+      } else {
+        logger.error(`❌ Provider listing failed: ${error.message}`);
+      }
     }
 
     return results;
 
   } catch (error) {
+    if (error.message === 'Server not accessible') {
+      // Already logged detailed instructions above
+      throw error;
+    }
     logger.error('API testing failed:', error);
     throw error;
   }

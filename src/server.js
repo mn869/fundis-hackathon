@@ -31,19 +31,39 @@ const limiter = rateLimit({
 });
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginEmbedderPolicy: false,
+  contentSecurityPolicy: false,
+}));
+
+// Enhanced CORS configuration to handle HTTPS frontend
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? ['https://yourdomain.com'] 
-    : ['http://localhost:3000', 'http://localhost:5173'],
-  credentials: true
+    : [
+        'http://localhost:3000', 
+        'http://localhost:5173',
+        'https://localhost:5173', // Add HTTPS support for Vite dev server
+        'http://127.0.0.1:5173',
+        'https://127.0.0.1:5173'
+      ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }));
+
 app.use(compression());
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 app.use(limiter);
+
+// Add a middleware to log all requests for debugging
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url} - Origin: ${req.get('Origin')}`);
+  next();
+});
 
 // Serve static files
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
@@ -97,10 +117,11 @@ async function startServer() {
     await connectDatabase();
     await connectRedis();
     
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       logger.info(`Server running on port ${PORT}`);
       logger.info(`Environment: ${process.env.NODE_ENV}`);
       logger.info(`API Documentation: http://localhost:${PORT}/api/docs`);
+      logger.info(`Server accessible at: http://localhost:${PORT} and http://127.0.0.1:${PORT}`);
     });
   } catch (error) {
     logger.error('Failed to start server:', error);
